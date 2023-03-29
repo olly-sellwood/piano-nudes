@@ -87,5 +87,28 @@ SynthDef(~k_synth_name_stereo, {|bufnum, out = 0|
     ~nextState = ~play_buffer.(~nextState);
 };
 
+~onResetButton = {|filenameWithoutExtension|
+    var bufferIndex = ~buffers.detectIndex {|buffer|
+        PathName(buffer.path).fileNameWithoutExtension == filenameWithoutExtension;
+    };
 
-~onTrigger.()
+    if (bufferIndex.notNil) {
+        ~nextState = ~create_state.(bufferIndex);
+    } {
+        "that file doesn't exist!".postln;
+    };
+};
+
+
+~onResetButton1 = { ~onResetButton.("sample-0001"); };
+~onResetButton2 = { ~onResetButton.("sample-0074"); };
+~onResetButton3 = { ~onResetButton.("sample-0239"); };
+~onResetButton4 = { ~onResetButton.("sample-0269"); };
+~onResetButton5 = { ~onResetButton.("sample-0486"); };
+~onResetButton6 = { ~onResetButton.("sample-0579"); };
+~onResetButton7 = { ~onResetButton.("sample-0646"); };
+~onResetButton8 = { ~onResetButton.("sample-0719"); };
+~onResetButton9 = { ~onResetButton.("sample-0834"); };
+~onResetButton10 = { ~onResetButton.("sample-0912"); };
+~onResetButton11 = { ~onResetButton.("sample-0960"); };
+~onResetButton12 = { ~onResetButton.("sample-0983"); };
