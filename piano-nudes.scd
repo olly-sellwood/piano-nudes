@@ -53,22 +53,39 @@ SynthDef(~k_synth_name_stereo, {|bufnum, out = 0|
     Out.ar(out, panned);
 }).add;
 
-(
-~play_buffer = {|buffer|
-    var synth_name = switch(buffer.numChannels)
-    { 1 } { ~k_synth_name_mono }
-    { 2 } { ~k_synth_name_stereo }
-    {nil};
+~play_buffer = {|state|
+    var bufferIndex = state[\index];
+    var newBufferIndex = if (bufferIndex.notNil and:{ bufferIndex < ~buffers.lastIndex}) { bufferIndex + 1} { nil };
 
-    synth_name.postln;
+    if (bufferIndex.notNil) {
+        var buffer = ~buffers[bufferIndex];
 
-    if (synth_name.isNil.not) {
-        Synth(synth_name, [\bufnum, buffer]);
+        var synth_name = switch(buffer.numChannels)
+        { 1 } { ~k_synth_name_mono }
+        { 2 } { ~k_synth_name_stereo }
+        {nil};
+
+        synth_name.postln;
+
+        if (synth_name.isNil.not) {
+            Synth(synth_name, [\bufnum, buffer]);
+        } {
+            ("Unsupported number of channels in buffer, falling back to stereo for buffer:" + buffer.path).postln;
+        }
     } {
-        ("Unsupported number of channels in buffer, falling back to stereo for buffer:" + buffer.path).postln;
-    }
+        "piece finished".postln;
+    };
+
+    ~create_state.(newBufferIndex);
 };
 
-)
 
-~play_buffer.(~buffers[2])
+~create_state = {|index| ~state = Dictionary.newFrom([\index: index]); };
+~nextState = ~create_state.(0);
+
+~onTrigger = {
+    ~nextState = ~play_buffer.(~nextState);
+};
+
+
+~onTrigger.()
