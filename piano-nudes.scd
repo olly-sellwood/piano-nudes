@@ -30,11 +30,13 @@ if (~samples_folder_path.isNil) {
     "samples folder exists".postln;
 };
 
+// array of sample paths
+~sample_paths = PathName(~samples_folder_path).files.collect {|pathName| pathName.fullPath };
 
+// initialize state
 ~state = Dictionary[];
 ~state.put("nextIndex", 0);
 ~state.put("buffers", Dictionary[]); // mapping of index to Buffer
-~state.put("paths", PathName(~samples_folder_path).files.collect {|pathName| pathName.fullPath });  // array of sample paths
 ~state.put("voices", Dictionary[]);  // mapping of Synth.nodeID to Buffer
 
 SynthDef("sample-player-stereo", {|bufnum, out = 0|
@@ -56,12 +58,11 @@ SynthDef("sample-player-stereo", {|bufnum, out = 0|
 
 ~setIndex = {|index|
     var buffer_loading_lookahead = 10;
-    var paths = ~state["paths"];
 
     ~state.put("nextIndex", index);
 
-    if (index.notNil and: { index < paths.size }) {
-        var last_index = (index + buffer_loading_lookahead).min(paths.lastIndex);
+    if (index.notNil and: { index < ~sample_paths.size }) {
+        var last_index = (index + buffer_loading_lookahead).min(~sample_paths.lastIndex);
 
         ~state["buffers"].keys.do {|key|
             var is_out_of_range = (key < index) || (key > last_index);
@@ -72,13 +73,15 @@ SynthDef("sample-player-stereo", {|bufnum, out = 0|
 
         (index..last_index).do {|lookahead_index|
             if (~state["buffers"].includesKey(lookahead_index).not) {
-                var path = paths[lookahead_index];
+                var path = ~sample_paths[lookahead_index];
                 var buffer = Buffer.read(s, path);
 
                 ~state["buffers"].put(lookahead_index, buffer);
                 ("loaded buffer:" + PathName(path).fileName).postln;
             };
         };
+    } {
+        "piece finished".postln;
     };
 };
 
@@ -90,7 +93,7 @@ SynthDef("sample-player-stereo", {|bufnum, out = 0|
 
         if (buffer.notNil) {
             var synth = Synth("sample-player-stereo", [\bufnum, buffer]);
-            var nextIndex = if (index < ~state["paths"].lastIndex) { index + 1 } { nil };
+            var nextIndex = if (index < ~sample_paths.lastIndex) { index + 1 } { nil };
 
             ~state["voices"][synth.nodeID] = buffer;
             ~state["buffers"].removeAt(index);
@@ -107,7 +110,7 @@ SynthDef("sample-player-stereo", {|bufnum, out = 0|
 };
 
 ~onResetButton = {|filenameWithoutExtension|
-    var index = ~state["paths"].detectIndex {|path|
+    var index = ~sample_paths.detectIndex {|path|
         PathName(path).fileNameWithoutExtension == filenameWithoutExtension;
     };
 
@@ -160,5 +163,4 @@ OSCdef(\listener, {|msg|
 
 ~state["nextIndex"];
 ~state["buffers"];
-~state["paths"];
 ~state["voices"];
