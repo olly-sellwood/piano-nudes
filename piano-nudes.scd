@@ -35,48 +35,58 @@ if (~samples_folder_path.isNil) {
 
 // initialize state
 ~state = Dictionary[];
-~state.put("nextIndex", 0);
+~state.put("nextIndex", 0);          // index of the next sample to play
 ~state.put("buffers", Dictionary[]); // mapping of index to Buffer
 ~state.put("voices", Dictionary[]);  // mapping of Synth.nodeID to Buffer
+// Buffers are moved from state["buffers"] to state["voices"] when playback starts
 
+// SynthDef for playback (assumes stereo files)
 SynthDef("sample-player-stereo", {|bufnum, out = 0|
     var sig = PlayBuf.ar(2, bufnum, doneAction: Done.freeSelf);
     Out.ar(out, sig);
 }).add;
 
-~free_buffer = {|index|
-    var buffer = ~state["buffers"][index];
+// state functions
+// -----------------------------------------------------------------------------
 
-    if (buffer.notNil) {
-        var path = buffer.path;
-        buffer.free;
-        ~state["buffers"].removeAt(index);
 
-        ("freed buffer" + PathName(path).fileName).postln;
-    };
-};
-
+// set the index of the next sample to play
+// @index `Integer` or `nil`
 ~setIndex = {|index|
+    // we always want to load 10 samples ahead of the current position
     var buffer_loading_lookahead = 10;
 
     ~state.put("nextIndex", index);
 
+    // only load buffers if index is valid
     if (index.notNil and: { index < ~sample_paths.size }) {
         var last_index = (index + buffer_loading_lookahead).min(~sample_paths.lastIndex);
 
+        // free and remove buffers that are earlier than the index, or after the lookahead index
         ~state["buffers"].keys.do {|key|
-            var is_out_of_range = (key < index) || (key > last_index);
-            if (is_out_of_range) {
-                ~free_buffer.(key);
+            if ((key < index) || (key > last_index)) {
+                var buffer = ~state["buffers"][index];
+
+                if (buffer.notNil) {
+                    var path = buffer.path;
+
+                    buffer.free;
+                    ~state["buffers"].removeAt(index);
+
+                    ("freed buffer" + PathName(path).fileName).postln;
+                };
             };
         };
 
+        // load buffers from the given index up to the lookahead index
         (index..last_index).do {|lookahead_index|
-            if (~state["buffers"].includesKey(lookahead_index).not) {
+            var is_already_loaded = ~state["buffers"].includesKey(lookahead_index);
+            if (is_already_loaded.not) {
                 var path = ~sample_paths[lookahead_index];
                 var buffer = Buffer.read(s, path);
 
                 ~state["buffers"].put(lookahead_index, buffer);
+
                 ("loaded buffer:" + PathName(path).fileName).postln;
             };
         };
@@ -85,6 +95,7 @@ SynthDef("sample-player-stereo", {|bufnum, out = 0|
     };
 };
 
+// trigger function to be called on pedal press
 ~onTrigger = {
     var index = ~state["nextIndex"];
 
@@ -92,6 +103,9 @@ SynthDef("sample-player-stereo", {|bufnum, out = 0|
         var buffer = ~state["buffers"][index];
 
         if (buffer.notNil) {
+            // play the buffer, move it from state["buffers"] to state["voices"]
+            // then increment the index
+
             var synth = Synth("sample-player-stereo", [\bufnum, buffer]);
             var nextIndex = if (index < ~sample_paths.lastIndex) { index + 1 } { nil };
 
@@ -109,6 +123,8 @@ SynthDef("sample-player-stereo", {|bufnum, out = 0|
     };
 };
 
+// helper for the reset buttons
+// @filenameWithoutExtension `String` name of the sample to reset to
 ~onResetButton = {|filenameWithoutExtension|
     var index = ~sample_paths.detectIndex {|path|
         PathName(path).fileNameWithoutExtension == filenameWithoutExtension;
@@ -122,7 +138,9 @@ SynthDef("sample-player-stereo", {|bufnum, out = 0|
     };
 };
 
-~on_synth_done = {|nodeID|
+// listen for synth end messages from the server, free and remove the buffer when finished.
+OSCdef(\listener, {|msg|
+    var nodeID = msg[1];
     var buffer = ~state["voices"][nodeID];
 
     if (buffer.notNil) {
@@ -132,15 +150,9 @@ SynthDef("sample-player-stereo", {|bufnum, out = 0|
     } {
         "Error: buffer is nil".postln;
     };
-};
-
-OSCdef(\listener, {|msg|
-    var nodeID = msg[1];
-    ~on_synth_done.(nodeID);
 }, "/n_end");
 
-
-
+// reset functions
 ~onResetButton1 = { ~onResetButton.("sample-0001"); };
 ~onResetButton2 = { ~onResetButton.("sample-0074"); };
 ~onResetButton3 = { ~onResetButton.("sample-0239"); };
@@ -154,13 +166,27 @@ OSCdef(\listener, {|msg|
 ~onResetButton11 = { ~onResetButton.("sample-0960"); };
 ~onResetButton12 = { ~onResetButton.("sample-0983"); };
 
-// testing code
-~setIndex.(1038);
+// init
+~onResetButton1.();
 
+// to call on pedal press
 ~onTrigger.();
 
-~onResetButton12.()
+// to call on reset buttons
+~onResetButton1.();
+~onResetButton2.();
+~onResetButton3.();
+~onResetButton4.();
+~onResetButton5.();
+~onResetButton6.();
+~onResetButton7.();
+~onResetButton8.();
+~onResetButton9.();
+~onResetButton10.();
+~onResetButton11.();
+~onResetButton12.();
 
+// inspect state
 ~state["nextIndex"];
 ~state["buffers"];
 ~state["voices"];
