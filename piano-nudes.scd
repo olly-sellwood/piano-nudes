@@ -2,11 +2,10 @@
 TODO
 
 - server config: BelaServerOptions
-- server boot
+- server auto boot
 - script booting override Main.run?
-
 - hardware input
-- bela autoboot
+- bela autoboot run script
 
 DONE
 - triggering samples
@@ -17,7 +16,7 @@ DONE
 
 s.options.numBuffers = 2048;
 s.boot;
-
+(
 ~samples_folder_path = File.realpath(thisProcess.nowExecutingPath.dirname +/+ "../samples/");
 
 if (~samples_folder_path.isNil) {
@@ -166,6 +165,7 @@ OSCdef(\listener, {|msg|
 ~onResetButton11 = { ~onResetButton.("sample-0960"); };
 ~onResetButton12 = { ~onResetButton.("sample-0983"); };
 
+)
 // init
 ~onResetButton1.();
 
