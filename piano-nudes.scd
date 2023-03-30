@@ -41,7 +41,7 @@ if (~samples_folder_path.isNil) {
 
 // SynthDef for playback (assumes stereo files)
 SynthDef("sample-player-stereo", {|bufnum, out = 0|
-    var sig = PlayBuf.ar(2, bufnum, doneAction: Done.freeSelf);
+    var sig = PlayBuf.ar(2, bufnum, BufRateScale.kr(bufnum), doneAction: Done.freeSelf);
     Out.ar(out, sig);
 }).add;
 
