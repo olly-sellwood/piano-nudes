@@ -3,6 +3,8 @@ TODO
 
 - hardware input
 - bela autoboot run script // do this in Bela IDE, add instructions
+- put samples into repo, once finalised (mono?)
+- switch synthdef to mono, if mono
 
 DONE
 - triggering samples
