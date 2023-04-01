@@ -46,7 +46,7 @@ if (Platform.hasBelaSupport) {
 ~synthDefNameMono = "sample-player-mono";
 ~synthDefNameStereo = "sample-player-stereo";
 
-~samplesDirectory = File.realpath(thisProcess.nowExecutingPath.dirname +/+ "../samples/");
+~samplesDirectory = File.realpath(thisProcess.nowExecutingPath.dirname +/+ "samples");
 
 if (~samplesDirectory.isNil) {
     "samples folder does not exist, the folder structure should be:".postln;
