@@ -50,12 +50,6 @@ if (~samples_folder_path.isNil) {
 ~state.put("voices", Dictionary[]);  // mapping of Synth.nodeID to Buffer
 // Buffers are moved from state["buffers"] to state["voices"] when playback starts
 
-// SynthDef for playback (assumes stereo files)
-SynthDef("sample-player-stereo", {|bufnum, out = 0|
-    var sig = PlayBuf.ar(2, bufnum, BufRateScale.kr(bufnum), doneAction: Done.freeSelf);
-    Out.ar(out, sig);
-}).add;
-
 // state functions
 // -----------------------------------------------------------------------------
 
@@ -177,6 +171,20 @@ OSCdef(\listener, {|msg|
 ~onResetButton12 = { ~onResetButton.("sample-0983"); };
 
 )
+
+s.waitForBoot {
+    // SynthDef for playback (assumes stereo files)
+    SynthDef("sample-player-stereo", {|bufnum, out = 0|
+        var sig = PlayBuf.ar(2, bufnum, BufRateScale.kr(bufnum), doneAction: Done.freeSelf);
+        Out.ar(out, sig);
+    }).add;
+
+    s.sync;
+
+};
+
+ServerQuit.add { 0.exit }; // quit if the button is pressed
+
 // init
 ~onResetButton1.();
 
