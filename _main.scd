@@ -33,11 +33,11 @@ s.options.postln;
 if (~samples_folder_path.isNil) {
     "samples folder does not exist, the folder structure should be:".postln;
     "".postln;
-    "project/ollie-sellwood-piano-nudes/piano-nudes.scd".postln;
-    "project/samples/sample-0001.wav (etc)".postln;
+    "piano-nudes/_main.scd".postln;
+    "piano-nudes/samples/sample-0001.wav (etc)".postln;
     0.exit;
 } {
-    "samples folder exists".postln;
+    "the samples folder was found".postln;
 };
 
 // array of sample paths
