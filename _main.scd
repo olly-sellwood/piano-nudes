@@ -64,13 +64,13 @@ SynthDef("sample-player-stereo", {|bufnum, out = 0|
         // free and remove buffers that are earlier than the index, or after the lookahead index
         ~state["buffers"].keys.do {|key|
             if ((key < index) || (key > last_index)) {
-                var buffer = ~state["buffers"][index];
+                var buffer = ~state["buffers"][key];
 
                 if (buffer.notNil) {
                     var path = buffer.path;
 
                     buffer.free;
-                    ~state["buffers"].removeAt(index);
+                    ~state["buffers"].removeAt(key);
 
                     ("freed buffer" + PathName(path).fileName).postln;
                 };
