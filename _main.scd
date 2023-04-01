@@ -4,25 +4,14 @@ Piano Nudes, by Olly Sellwood (https://www.ollysellwood.info)
 
 SuperCollider patch for Bela (https://bela.io), by Arthur Carabott (https://www.arthurcarabott.com)
 
-
-TODO
-
-- bela autoboot run script // do this in Bela IDE, add instructions
-- put samples into repo, once finalised (mono?)
-
-
-DONE
-- triggering samples
-- reset points
-- load samples (memory constraints, DiskIn)
-- server config: BelaServerOptions
-- server auto boot
-- hardware input
-- switch synthdef to mono, if mono
-
 */
 (
 
+// modify this to map pins to actions
+// the number corresponds to the Bela hardware pin (see https://learn.bela.io/pin-diagram/)
+// "trigger" will play the current sample and move to the next one
+// "sample-XXXX" will move to the sample with that name
+   
 ~pinMapping = Dictionary.with(*[
     0 -> "trigger",
     1 -> "sample-0001",
