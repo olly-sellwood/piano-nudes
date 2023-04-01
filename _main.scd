@@ -29,9 +29,9 @@ if (Platform.hasBelaSupport) {
 
 s.options.postln;
 
-~samples_folder_path = File.realpath(thisProcess.nowExecutingPath.dirname +/+ "../samples/");
+~samplesDirectory = File.realpath(thisProcess.nowExecutingPath.dirname +/+ "../samples/");
 
-if (~samples_folder_path.isNil) {
+if (~samplesDirectory.isNil) {
     "samples folder does not exist, the folder structure should be:".postln;
     "".postln;
     "piano-nudes/_main.scd".postln;
@@ -42,14 +42,14 @@ if (~samples_folder_path.isNil) {
 };
 
 // array of sample paths
-~sample_paths = PathName(~samples_folder_path).files.collect {|pathName| pathName.fullPath };
+~samplePaths = PathName(~samplesDirectory).files.collect {|pathName| pathName.fullPath };
 
 // initialize state
 ~state = Dictionary[];
-~state.put("nextIndex", 0);          // index of the next sample to play
-~state.put("buffers", Dictionary[]); // mapping of index to Buffer
-~state.put("voices", Dictionary[]);  // mapping of Synth.nodeID to Dictionary [\synth -> Synth, \buffer -> Buffer, \index -> sampleIndex]);
-// Buffers are moved from state["buffers"] to state["voices"] when playback starts
+~state.put(\nextIndex, 0);          // index of the next sample to play
+~state.put(\buffers, Dictionary[]); // mapping of index to Buffer
+~state.put(\voices, Dictionary[]);  // mapping of Synth.nodeID to Dictionary [\synth -> Synth, \buffer -> Buffer, \index -> sampleIndex]);
+// Buffers are moved from state[\buffers] to state[\voices] when playback starts
 
 // state functions
 // -----------------------------------------------------------------------------
@@ -59,24 +59,24 @@ if (~samples_folder_path.isNil) {
 // @index `Integer` or `nil`
 ~setIndex = {|index|
     // we always want to load 10 samples ahead of the current position
-    var buffer_loading_lookahead = 10;
+    var numSamplesToLookahead = 10;
 
-    ~state.put("nextIndex", index);
+    ~state.put(\nextIndex, index);
 
     // only load buffers if index is valid
-    if (index.notNil and: { index < ~sample_paths.size }) {
-        var last_index = (index + buffer_loading_lookahead).min(~sample_paths.lastIndex);
+    if (index.notNil and: { index < ~samplePaths.size }) {
+        var lastIndex = (index + numSamplesToLookahead).min(~samplePaths.lastIndex);
 
         // free and remove buffers that are earlier than the index, or after the lookahead index
-        ~state["buffers"].keys.do {|key|
-            if ((key < index) || (key > last_index)) {
-                var buffer = ~state["buffers"][key];
+        ~state[\buffers].keys.do {|key|
+            if ((key < index) || (key > lastIndex)) {
+                var buffer = ~state[\buffers][key];
 
                 if (buffer.notNil) {
                     var path = buffer.path;
 
                     buffer.free;
-                    ~state["buffers"].removeAt(key);
+                    ~state[\buffers].removeAt(key);
 
                     ("freed buffer" + PathName(path).fileName).postln;
                 };
@@ -84,13 +84,13 @@ if (~samples_folder_path.isNil) {
         };
 
         // load buffers from the given index up to the lookahead index
-        (index..last_index).do {|lookahead_index|
-            var is_already_loaded = ~state["buffers"].includesKey(lookahead_index);
-            if (is_already_loaded.not) {
-                var path = ~sample_paths[lookahead_index];
+        (index..lastIndex).do {|lookaheadIndex|
+            var isAlreadyLoaded = ~state[\buffers].includesKey(lookaheadIndex);
+            if (isAlreadyLoaded.not) {
+                var path = ~samplePaths[lookaheadIndex];
                 var buffer = Buffer.read(s, path);
 
-                ~state["buffers"].put(lookahead_index, buffer);
+                ~state[\buffers].put(lookaheadIndex, buffer);
 
                 ("loaded buffer:" + PathName(path).fileName).postln;
             };
@@ -102,20 +102,20 @@ if (~samples_folder_path.isNil) {
 
 // trigger function to be called on pedal press
 ~playNextSample = {
-    var index = ~state["nextIndex"];
+    var index = ~state[\nextIndex];
 
     if (index.notNil) {
-        var buffer = ~state["buffers"][index];
+        var buffer = ~state[\buffers][index];
 
         if (buffer.notNil) {
-            // play the buffer, move it from state["buffers"] to state["voices"]
+            // play the buffer, move it from state[\buffers] to state[\voices]
             // then increment the index
 
             var synth = Synth("sample-player-stereo", [\bufnum, buffer]);
-            var nextIndex = if (index < ~sample_paths.lastIndex) { index + 1 } { nil };
+            var nextIndex = if (index < ~samplePaths.lastIndex) { index + 1 } { nil };
 
-            ~state["voices"][synth.nodeID] = Dictionary.with(*[\synth -> synth, \buffer -> buffer, \index -> index]);
-            ~state["buffers"].removeAt(index);
+            ~state[\voices][synth.nodeID] = Dictionary.with(*[\synth -> synth, \buffer -> buffer, \index -> index]);
+            ~state[\buffers].removeAt(index);
 
             ("playing" + PathName(buffer.path).fileName).postln;
 
@@ -132,17 +132,17 @@ if (~samples_folder_path.isNil) {
 // @filenameWithoutExtension `String` name of the sample to reset to
 ~resetToSample = {|filenameWithoutExtension|
     // find the index of the sample to jump to
-    var index = ~sample_paths.detectIndex {|path|
+    var index = ~samplePaths.detectIndex {|path|
         PathName(path).fileNameWithoutExtension == filenameWithoutExtension;
     };
 
     // free any playing voices
-    ~state["voices"].values.do {|voice| voice[\synth].free; };
-    ~state["voices"].clear;
+    ~state[\voices].values.do {|voice| voice[\synth].free; };
+    ~state[\voices].clear;
 
     // free any buffers
-    ~state["buffers"].values.do {|buffer| buffer.free; };
-    ~state["buffers"].clear;
+    ~state[\buffers].values.do {|buffer| buffer.free; };
+    ~state[\buffers].clear;
 
     // move to the new sample to play
     if (index.notNil) {
@@ -156,12 +156,12 @@ if (~samples_folder_path.isNil) {
 // listen for synth end messages from the server, free and remove the buffer when finished.
 OSCdef(\listener, {|msg|
     var nodeID = msg[1];
-    var voice = ~state["voices"][nodeID];
+    var voice = ~state[\voices][nodeID];
 
     if (voice.notNil) {
         var bufferIndex = voice[\index];
         voice[\buffer].free;
-        ~state["voices"].removeAt(nodeID);
+        ~state[\voices].removeAt(nodeID);
         ("cleaned up voice:" + nodeID + "(buffer:" + bufferIndex + ")").postln;
     };
 }, "/n_end");
@@ -202,6 +202,6 @@ ServerQuit.add { 0.exit }; // quit if the button is pressed
 // ~playNextSample.();
 
 // ~resetToSample.("sample-0223");
-// ~state["nextIndex"]
-// ~state["buffers"].keys.asArray.sort
-// ~state["voices"]
+// ~state[\nextIndex]
+// ~state[\buffers].keys.asArray.sort
+// ~state[\voices]
