@@ -1,4 +1,10 @@
 /*
+
+Piano Nudes, by Olly Sellwood (https://www.ollysellwood.info)
+
+SuperCollider patch for Bela (https://bela.io), by Arthur Carabott (https://www.arthurcarabott.com)
+
+
 TODO
 
 - bela autoboot run script // do this in Bela IDE, add instructions
