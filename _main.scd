@@ -13,7 +13,7 @@ DONE
 - load samples (memory constraints, DiskIn)
 
 */
-
+(
 s = Server.default;
 
 if (Platform.hasBelaSupport) {
@@ -47,7 +47,7 @@ if (~samples_folder_path.isNil) {
 ~state = Dictionary[];
 ~state.put("nextIndex", 0);          // index of the next sample to play
 ~state.put("buffers", Dictionary[]); // mapping of index to Buffer
-~state.put("voices", Dictionary[]);  // mapping of Synth.nodeID to Buffer
+~state.put("voices", Dictionary[]);  // mapping of Synth.nodeID to Dictionary [\synth -> Synth, \buffer -> Buffer, \index -> sampleIndex]);
 // Buffers are moved from state["buffers"] to state["voices"] when playback starts
 
 // state functions
@@ -113,7 +113,7 @@ if (~samples_folder_path.isNil) {
             var synth = Synth("sample-player-stereo", [\bufnum, buffer]);
             var nextIndex = if (index < ~sample_paths.lastIndex) { index + 1 } { nil };
 
-            ~state["voices"][synth.nodeID] = buffer;
+            ~state["voices"][synth.nodeID] = Dictionary.with(*[\synth -> synth, \buffer -> buffer, \index -> index]);
             ~state["buffers"].removeAt(index);
 
             ("playing" + PathName(buffer.path).fileName).postln;
@@ -129,11 +129,21 @@ if (~samples_folder_path.isNil) {
 
 // helper for the reset buttons
 // @filenameWithoutExtension `String` name of the sample to reset to
-~onResetButton = {|filenameWithoutExtension|
+~resetToSample = {|filenameWithoutExtension|
+    // find the index of the sample to jump to
     var index = ~sample_paths.detectIndex {|path|
         PathName(path).fileNameWithoutExtension == filenameWithoutExtension;
     };
 
+    // free any playing voices
+    ~state["voices"].values.do {|voice| voice[\synth].free; };
+    ~state["voices"].clear;
+
+    // free any buffers
+    ~state["buffers"].values.do {|buffer| buffer.free; };
+    ~state["buffers"].clear;
+
+    // move to the new sample to play
     if (index.notNil) {
         ~setIndex.(index);
         ("reset to" + filenameWithoutExtension).postln;
@@ -145,30 +155,29 @@ if (~samples_folder_path.isNil) {
 // listen for synth end messages from the server, free and remove the buffer when finished.
 OSCdef(\listener, {|msg|
     var nodeID = msg[1];
-    var buffer = ~state["voices"][nodeID];
+    var voice = ~state["voices"][nodeID];
 
-    if (buffer.notNil) {
-        buffer.free;
+    if (voice.notNil) {
+        var bufferIndex = voice[\index];
+        voice[\buffer].free;
         ~state["voices"].removeAt(nodeID);
-        ("cleaned up voice:" + nodeID).postln;
-    } {
-        "Error: buffer is nil".postln;
+        ("cleaned up voice:" + nodeID + "(buffer:" + bufferIndex + ")").postln;
     };
 }, "/n_end");
 
 // reset functions
-~resetToMarker1 = { ~onResetButton.("sample-0001"); };
-~resetToMarker2 = { ~onResetButton.("sample-0074"); };
-~resetToMarker3 = { ~onResetButton.("sample-0239"); };
-~resetToMarker4 = { ~onResetButton.("sample-0269"); };
-~resetToMarker5 = { ~onResetButton.("sample-0486"); };
-~resetToMarker6 = { ~onResetButton.("sample-0579"); };
-~resetToMarker7 = { ~onResetButton.("sample-0646"); };
-~resetToMarker8 = { ~onResetButton.("sample-0719"); };
-~resetToMarker9 = { ~onResetButton.("sample-0834"); };
-~resetToMarker10 = { ~onResetButton.("sample-0912"); };
-~resetToMarker11 = { ~onResetButton.("sample-0960"); };
-~resetToMarker12 = { ~onResetButton.("sample-0983"); };
+~resetToMarker1 = { ~resetToSample.("sample-0001"); };
+~resetToMarker2 = { ~resetToSample.("sample-0074"); };
+~resetToMarker3 = { ~resetToSample.("sample-0239"); };
+~resetToMarker4 = { ~resetToSample.("sample-0269"); };
+~resetToMarker5 = { ~resetToSample.("sample-0486"); };
+~resetToMarker6 = { ~resetToSample.("sample-0579"); };
+~resetToMarker7 = { ~resetToSample.("sample-0646"); };
+~resetToMarker8 = { ~resetToSample.("sample-0719"); };
+~resetToMarker9 = { ~resetToSample.("sample-0834"); };
+~resetToMarker10 = { ~resetToSample.("sample-0912"); };
+~resetToMarker11 = { ~resetToSample.("sample-0960"); };
+~resetToMarker12 = { ~resetToSample.("sample-0983"); };
 
 s.waitForBoot {
     // SynthDef for playback (assumes stereo files)
@@ -179,12 +188,19 @@ s.waitForBoot {
 
     s.sync;
 
+    // init
+    ~resetToMarker1.();
 };
 
 ServerQuit.add { 0.exit }; // quit if the button is pressed
 
-// init
-~resetToMarker1.();
+)
 
+// debug code
 // to call on pedal press
-~playNextSample.();
+// ~playNextSample.();
+
+// ~resetToSample.("sample-0223");
+// ~state["nextIndex"]
+// ~state["buffers"].keys.asArray.sort
+// ~state["voices"]
