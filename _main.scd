@@ -1,10 +1,9 @@
 /*
 TODO
 
-- hardware input
 - bela autoboot run script // do this in Bela IDE, add instructions
 - put samples into repo, once finalised (mono?)
-- switch synthdef to mono, if mono
+
 
 DONE
 - triggering samples
@@ -12,6 +11,8 @@ DONE
 - load samples (memory constraints, DiskIn)
 - server config: BelaServerOptions
 - server auto boot
+- hardware input
+- switch synthdef to mono, if mono
 
 */
 (
