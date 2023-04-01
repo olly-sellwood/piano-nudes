@@ -22,8 +22,6 @@ DONE
 
 */
 (
-// number of Bela DigitalIn pins to listen to
-~numDigitalInputs = 16;
 
 ~pinMapping = Dictionary.with(*[
     0 -> "trigger",
@@ -40,6 +38,9 @@ DONE
     11 -> "sample-0960",
     12 -> "sample-0983",
 ]);
+
+// number of Bela DigitalIn pins to listen to
+~numDigitalInputs = 16;
 
 s = Server.default;
 
