@@ -191,6 +191,8 @@ if (~samplesDirectory.isNil) {
     };
 };
 
+ServerQuit.add { 0.exit }; // quit if the button is pressed
+
 s.waitForBoot {
     // SynthDefs for playback (handles mono or stereo)
     [[~synthDefNameMono, 1], [~synthDefNameStereo, 2]].do {|model|
@@ -283,9 +285,6 @@ s.waitForBoot {
     // init
     ~resetToSample.(PathName(~samplePaths[0]).fileNameWithoutExtension);
 };
-
-ServerQuit.add { 0.exit }; // quit if the button is pressed
-
 )
 
 // // debug code
