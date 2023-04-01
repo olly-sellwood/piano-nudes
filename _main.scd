@@ -18,20 +18,21 @@ DONE
 // number of Bela DigitalIn pins to listen to
 ~numDigitalInputs = 16;
 
-~triggerSamplePin = 0;
-
-~resetPin1 = 1;
-~resetPin2 = 2;
-~resetPin3 = 3;
-~resetPin4 = 4;
-~resetPin5 = 5;
-~resetPin6 = 6;
-~resetPin7 = 7;
-~resetPin8 = 8;
-~resetPin9 = 9;
-~resetPin10 = 10;
-~resetPin11 = 11;
-~resetPin12 = 12;
+~pinMapping = Dictionary.with(*[
+    0 -> "trigger",
+    1 -> "sample-0001",
+    2 -> "sample-0074",
+    3 -> "sample-0239",
+    4 -> "sample-0269",
+    5 -> "sample-0486",
+    6 -> "sample-0579",
+    7 -> "sample-0646",
+    8 -> "sample-0719",
+    9 -> "sample-0834",
+    10 -> "sample-0912",
+    11 -> "sample-0960",
+    12 -> "sample-0983",
+]);
 
 s = Server.default;
 
@@ -60,7 +61,7 @@ if (~samplesDirectory.isNil) {
     "piano-nudes/samples/sample-0001.wav (etc)".postln;
     0.exit;
 } {
-    "the samples folder was found".postln;
+    "- samples folder found".postln;
 };
 
 // array of sample paths
@@ -177,25 +178,11 @@ if (~samplesDirectory.isNil) {
     // move to the new sample to play
     if (index.notNil) {
         ~setIndex.(index);
-        ("reset to" + filenameWithoutExtension).postln;
+        ("- reset to" + filenameWithoutExtension).postln;
     } {
-        "that file doesn't exist!".postln;
+        ("tried to reset to a sample that doesn't exist:" + filenameWithoutExtension).postln;
     };
 };
-
-// reset functions
-~resetToMarker1 = { ~resetToSample.("sample-0001"); };
-~resetToMarker2 = { ~resetToSample.("sample-0074"); };
-~resetToMarker3 = { ~resetToSample.("sample-0239"); };
-~resetToMarker4 = { ~resetToSample.("sample-0269"); };
-~resetToMarker5 = { ~resetToSample.("sample-0486"); };
-~resetToMarker6 = { ~resetToSample.("sample-0579"); };
-~resetToMarker7 = { ~resetToSample.("sample-0646"); };
-~resetToMarker8 = { ~resetToSample.("sample-0719"); };
-~resetToMarker9 = { ~resetToSample.("sample-0834"); };
-~resetToMarker10 = { ~resetToSample.("sample-0912"); };
-~resetToMarker11 = { ~resetToSample.("sample-0960"); };
-~resetToMarker12 = { ~resetToSample.("sample-0983"); };
 
 s.waitForBoot {
     // SynthDefs for playback (handles mono or stereo)
@@ -208,6 +195,7 @@ s.waitForBoot {
             Out.ar(out, sig);
         }).add;
     };
+    "- added playback synth defs".postln;
 
     // listen for synth end messages from the server, free and remove the buffer when finished.
     OSCdef(\synthListener, {|msg|
@@ -225,6 +213,7 @@ s.waitForBoot {
 
         };
     }, "/n_end");
+    "- created synth listener".postln;
 
 
     // synth def for listening to Bela button input
@@ -232,54 +221,49 @@ s.waitForBoot {
     ~buttonListenerCmdName = "/button-pressed";
 
     if (Platform.hasBelaSupport) {
-
+        var lastPin = ~numDigitalInputs - 1;
         SynthDef(~buttonListenerSynthDefName, {
-            var ins = DigitalIn.ar((0..(~numDigitalInputs - 1)));
+            var ins = DigitalIn.ar((0..lastPin));
             var triggers = Trig.kr(ins);
 
             SendReply.kr(triggers, ~buttonListenerCmdName, triggers);
         }).add;
-
     } {
-
         // simulation for desktop testing
         SynthDef(~buttonListenerSynthDefName, {|t_values=#[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]|
             var triggers = Trig.kr(t_values);
             SendReply.kr(triggers, ~buttonListenerCmdName, triggers);
         }).add;
-
     };
+    "- added button listener synthdef".postln;
 
     // listener
     OSCdef(\buttonListener, {|msg|
         var values = msg[3..].asInteger;
 
-        values.postln;
         values.do { |value, pinIndex|
             var didTrigger = value == 1;
             if (didTrigger) {
+                var mapping = ~pinMapping[pinIndex];
+                var sampleExists = ~samplePaths.any {|path| PathName(path).fileNameWithoutExtension == mapping; } ;
 
-                switch (pinIndex)
+                case
+                // trigger sample
+                { mapping == "trigger"; } { ~playNextSample.(); }
 
-                {~triggerSamplePin} { ~playNextSample.(); }
+                // reset
+                { sampleExists } { ~resetToSample.(mapping); }
 
-                {~resetPin1} { ~resetToMarker1.(); }
-                {~resetPin2} { ~resetToMarker2.(); }
-                {~resetPin3} { ~resetToMarker3.(); }
-                {~resetPin4} { ~resetToMarker4.(); }
-                {~resetPin5} { ~resetToMarker5.(); }
-                {~resetPin6} { ~resetToMarker6.(); }
-                {~resetPin7} { ~resetToMarker7.(); }
-                {~resetPin8} { ~resetToMarker8.(); }
-                {~resetPin9} { ~resetToMarker9.(); }
-                {~resetPin10} { ~resetToMarker10.(); }
-                {~resetPin11} { ~resetToMarker11.(); }
-                {~resetPin12} { ~resetToMarker12.(); }
-                {};
+                // no mapping
+                { mapping.isNil; } { ("no action mapped to pin:" + pinIndex).postln; }
+
+                // no sample exists with that name
+                { sampleExists.not } { ("no sample exists with the name:" + mapping).postln; };
 
             };
         };
     }, ~buttonListenerCmdName);
+    "- created button listener".postln;
 
     s.sync;
 
@@ -287,39 +271,32 @@ s.waitForBoot {
         ~buttonListenerSynth.free;
     };
     ~buttonListenerSynth = Synth(~buttonListenerSynthDefName);
+    "- created button listener synth".postln;
 
     // init
-    ~resetToMarker1.();
+    ~resetToSample.(PathName(~samplePaths[0]).fileNameWithoutExtension);
 };
 
 ServerQuit.add { 0.exit }; // quit if the button is pressed
 
 )
 
-// debug code
-// ~state[\nextIndex]
-// ~state[\buffers].keys.asArray.sort
-// ~state[\voices]
-
+// // debug code
+// ~state[\nextIndex];
+// ~state[\buffers].keys.asArray.sort;
+// ~state[\voices];
+//
+// (
 // ~debugClickButton = {|index|
 //     var values = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0];
-//     values[index] = 1.0;
-//     ~buttonListenerSynth.set(\t_values, values);
-// };
+//     if (index < values.size) {
 //
-// ~debugClickButton.(~triggerSamplePin);
-// ~debugClickButton.(~resetPin1);
-// ~debugClickButton.(~resetPin2);
-// ~debugClickButton.(~resetPin3);
-// ~debugClickButton.(~resetPin4);
-// ~debugClickButton.(~resetPin5);
-// ~debugClickButton.(~resetPin6);
-// ~debugClickButton.(~resetPin7);
-// ~debugClickButton.(~resetPin8);
-// ~debugClickButton.(~resetPin9);
-// ~debugClickButton.(~resetPin10);
-// ~debugClickButton.(~resetPin11);
-// ~debugClickButton.(~resetPin12);
-// ~debugClickButton.(~resetPin13);
-// ~debugClickButton.(~resetPin14);
-// ~debugClickButton.(~resetPin15);
+//         values[index] = 1.0;
+//         ~buttonListenerSynth.set(\t_values, values);
+//     } {
+//         ("pin index out of range. Pin:"+ index ++ "," + "Max:" + values.lastIndex).postln;
+//     }
+// };
+// );
+// ~debugClickButton.(16);
+// ~debugClickButton.(3);
