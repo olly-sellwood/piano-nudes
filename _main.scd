@@ -53,9 +53,6 @@ if (Platform.hasBelaSupport) {
     s.options.numOutputBusChannels = 2;
 };
 
-s.options.postln;
-
-
 ~synthDefNameMono = "sample-player-mono";
 ~synthDefNameStereo = "sample-player-stereo";
 
