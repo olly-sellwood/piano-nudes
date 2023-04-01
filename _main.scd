@@ -100,7 +100,7 @@ if (~samples_folder_path.isNil) {
 };
 
 // trigger function to be called on pedal press
-~onTrigger = {
+~playNextSample = {
     var index = ~state["nextIndex"];
 
     if (index.notNil) {
@@ -157,20 +157,18 @@ OSCdef(\listener, {|msg|
 }, "/n_end");
 
 // reset functions
-~onResetButton1 = { ~onResetButton.("sample-0001"); };
-~onResetButton2 = { ~onResetButton.("sample-0074"); };
-~onResetButton3 = { ~onResetButton.("sample-0239"); };
-~onResetButton4 = { ~onResetButton.("sample-0269"); };
-~onResetButton5 = { ~onResetButton.("sample-0486"); };
-~onResetButton6 = { ~onResetButton.("sample-0579"); };
-~onResetButton7 = { ~onResetButton.("sample-0646"); };
-~onResetButton8 = { ~onResetButton.("sample-0719"); };
-~onResetButton9 = { ~onResetButton.("sample-0834"); };
-~onResetButton10 = { ~onResetButton.("sample-0912"); };
-~onResetButton11 = { ~onResetButton.("sample-0960"); };
-~onResetButton12 = { ~onResetButton.("sample-0983"); };
-
-)
+~resetToMarker1 = { ~onResetButton.("sample-0001"); };
+~resetToMarker2 = { ~onResetButton.("sample-0074"); };
+~resetToMarker3 = { ~onResetButton.("sample-0239"); };
+~resetToMarker4 = { ~onResetButton.("sample-0269"); };
+~resetToMarker5 = { ~onResetButton.("sample-0486"); };
+~resetToMarker6 = { ~onResetButton.("sample-0579"); };
+~resetToMarker7 = { ~onResetButton.("sample-0646"); };
+~resetToMarker8 = { ~onResetButton.("sample-0719"); };
+~resetToMarker9 = { ~onResetButton.("sample-0834"); };
+~resetToMarker10 = { ~onResetButton.("sample-0912"); };
+~resetToMarker11 = { ~onResetButton.("sample-0960"); };
+~resetToMarker12 = { ~onResetButton.("sample-0983"); };
 
 s.waitForBoot {
     // SynthDef for playback (assumes stereo files)
@@ -186,26 +184,7 @@ s.waitForBoot {
 ServerQuit.add { 0.exit }; // quit if the button is pressed
 
 // init
-~onResetButton1.();
+~resetToMarker1.();
 
 // to call on pedal press
-~onTrigger.();
-
-// to call on reset buttons
-~onResetButton1.();
-~onResetButton2.();
-~onResetButton3.();
-~onResetButton4.();
-~onResetButton5.();
-~onResetButton6.();
-~onResetButton7.();
-~onResetButton8.();
-~onResetButton9.();
-~onResetButton10.();
-~onResetButton11.();
-~onResetButton12.();
-
-// inspect state
-~state["nextIndex"];
-~state["buffers"];
-~state["voices"];
+~playNextSample.();
