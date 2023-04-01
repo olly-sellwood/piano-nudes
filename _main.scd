@@ -29,6 +29,9 @@ if (Platform.hasBelaSupport) {
 
 s.options.postln;
 
+~synthDefNameMono= "sample-player-mono";
+~synthDefNameStereo = "sample-player-stereo";
+
 ~samplesDirectory = File.realpath(thisProcess.nowExecutingPath.dirname +/+ "../samples/");
 
 if (~samplesDirectory.isNil) {
@@ -100,6 +103,14 @@ if (~samplesDirectory.isNil) {
     };
 };
 
+~playSample = {|buffer|
+    var name = if (buffer.numChannels == 1) { ~synthDefNameMono; } { ~synthDefNameStereo; };
+    var synth = Synth(name, [\bufnum, buffer]);
+
+    // return the synth
+    synth;
+};
+
 // trigger function to be called on pedal press
 ~playNextSample = {
     var index = ~state[\nextIndex];
@@ -111,7 +122,7 @@ if (~samplesDirectory.isNil) {
             // play the buffer, move it from state[\buffers] to state[\voices]
             // then increment the index
 
-            var synth = Synth("sample-player-stereo", [\bufnum, buffer]);
+            var synth = ~playSample.(buffer);
             var nextIndex = if (index < ~samplePaths.lastIndex) { index + 1 } { nil };
 
             ~state[\voices][synth.nodeID] = Dictionary.with(*[\synth -> synth, \buffer -> buffer, \index -> index]);
@@ -160,9 +171,13 @@ OSCdef(\listener, {|msg|
 
     if (voice.notNil) {
         var bufferIndex = voice[\index];
+        var samplePath = ~samplePaths[bufferIndex];
+
         voice[\buffer].free;
         ~state[\voices].removeAt(nodeID);
-        ("cleaned up voice:" + nodeID + "(buffer:" + bufferIndex + ")").postln;
+
+        ("cleaned up:" + PathName(samplePath).fileName).postln;
+
     };
 }, "/n_end");
 
@@ -181,11 +196,16 @@ OSCdef(\listener, {|msg|
 ~resetToMarker12 = { ~resetToSample.("sample-0983"); };
 
 s.waitForBoot {
-    // SynthDef for playback (assumes stereo files)
-    SynthDef("sample-player-stereo", {|bufnum, out = 0|
-        var sig = PlayBuf.ar(2, bufnum, BufRateScale.kr(bufnum), doneAction: Done.freeSelf);
-        Out.ar(out, sig);
-    }).add;
+    // SynthDefs for playback (assumes stereo files)
+    [[~synthDefNameMono, 1], [~synthDefNameStereo, 2]].do {|model|
+        var name = model[0];
+        var numChannels = model[1];
+
+        SynthDef(name, {|bufnum, out = 0|
+            var sig = PlayBuf.ar(numChannels, bufnum, BufRateScale.kr(bufnum), doneAction: Done.freeSelf);
+            Out.ar(out, sig);
+        }).add;
+    };
 
     s.sync;
 
