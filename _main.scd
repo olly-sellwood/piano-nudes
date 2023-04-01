@@ -1,16 +1,15 @@
 /*
 TODO
 
-- server config: BelaServerOptions
-- server auto boot
-- script booting override Main.run?
 - hardware input
-- bela autoboot run script
+- bela autoboot run script // do this in Bela IDE, add instructions
 
 DONE
 - triggering samples
 - reset points
 - load samples (memory constraints, DiskIn)
+- server config: BelaServerOptions
+- server auto boot
 
 */
 (
