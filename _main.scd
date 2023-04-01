@@ -15,12 +15,30 @@ DONE
 
 */
 (
+// number of Bela DigitalIn pins to listen to
+~numDigitalInputs = 16;
+
+~triggerSamplePin = 0;
+
+~resetPin1 = 1;
+~resetPin2 = 2;
+~resetPin3 = 3;
+~resetPin4 = 4;
+~resetPin5 = 5;
+~resetPin6 = 6;
+~resetPin7 = 7;
+~resetPin8 = 8;
+~resetPin9 = 9;
+~resetPin10 = 10;
+~resetPin11 = 11;
+~resetPin12 = 12;
+
 s = Server.default;
 
 if (Platform.hasBelaSupport) {
     s.options.numAnalogInChannels = 8;
     s.options.numAnalogOutChannels = 8;
-    s.options.numDigitalChannels = 16;
+    s.options.numDigitalChannels = ~numDigitalInputs;
 
     s.options.blockSize = 16;
     s.options.numInputBusChannels = 2;
@@ -29,7 +47,8 @@ if (Platform.hasBelaSupport) {
 
 s.options.postln;
 
-~synthDefNameMono= "sample-player-mono";
+
+~synthDefNameMono = "sample-player-mono";
 ~synthDefNameStereo = "sample-player-stereo";
 
 ~samplesDirectory = File.realpath(thisProcess.nowExecutingPath.dirname +/+ "../samples/");
@@ -164,23 +183,6 @@ if (~samplesDirectory.isNil) {
     };
 };
 
-// listen for synth end messages from the server, free and remove the buffer when finished.
-OSCdef(\listener, {|msg|
-    var nodeID = msg[1];
-    var voice = ~state[\voices][nodeID];
-
-    if (voice.notNil) {
-        var bufferIndex = voice[\index];
-        var samplePath = ~samplePaths[bufferIndex];
-
-        voice[\buffer].free;
-        ~state[\voices].removeAt(nodeID);
-
-        ("cleaned up:" + PathName(samplePath).fileName).postln;
-
-    };
-}, "/n_end");
-
 // reset functions
 ~resetToMarker1 = { ~resetToSample.("sample-0001"); };
 ~resetToMarker2 = { ~resetToSample.("sample-0074"); };
@@ -196,7 +198,7 @@ OSCdef(\listener, {|msg|
 ~resetToMarker12 = { ~resetToSample.("sample-0983"); };
 
 s.waitForBoot {
-    // SynthDefs for playback (assumes stereo files)
+    // SynthDefs for playback (handles mono or stereo)
     [[~synthDefNameMono, 1], [~synthDefNameStereo, 2]].do {|model|
         var name = model[0];
         var numChannels = model[1];
@@ -207,7 +209,84 @@ s.waitForBoot {
         }).add;
     };
 
+    // listen for synth end messages from the server, free and remove the buffer when finished.
+    OSCdef(\synthListener, {|msg|
+        var nodeID = msg[1];
+        var voice = ~state[\voices][nodeID];
+
+        if (voice.notNil) {
+            var bufferIndex = voice[\index];
+            var samplePath = ~samplePaths[bufferIndex];
+
+            voice[\buffer].free;
+            ~state[\voices].removeAt(nodeID);
+
+            ("cleaned up:" + PathName(samplePath).fileName).postln;
+
+        };
+    }, "/n_end");
+
+
+    // synth def for listening to Bela button input
+    ~buttonListenerSynthDefName = "button-listener";
+    ~buttonListenerCmdName = "/button-pressed";
+
+    if (Platform.hasBelaSupport) {
+
+        SynthDef(~buttonListenerSynthDefName, {
+            var ins = DigitalIn.ar((0..(~numDigitalInputs - 1)));
+            var triggers = Trig.kr(ins);
+
+            SendReply.kr(triggers, ~buttonListenerCmdName, triggers);
+        }).add;
+
+    } {
+
+        // simulation for desktop testing
+        SynthDef(~buttonListenerSynthDefName, {|t_values=#[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]|
+            var triggers = Trig.kr(t_values);
+            SendReply.kr(triggers, ~buttonListenerCmdName, triggers);
+        }).add;
+
+    };
+
+    // listener
+    OSCdef(\buttonListener, {|msg|
+        var values = msg[3..].asInteger;
+
+        values.postln;
+        values.do { |value, pinIndex|
+            var didTrigger = value == 1;
+            if (didTrigger) {
+
+                switch (pinIndex)
+
+                {~triggerSamplePin} { ~playNextSample.(); }
+
+                {~resetPin1} { ~resetToMarker1.(); }
+                {~resetPin2} { ~resetToMarker2.(); }
+                {~resetPin3} { ~resetToMarker3.(); }
+                {~resetPin4} { ~resetToMarker4.(); }
+                {~resetPin5} { ~resetToMarker5.(); }
+                {~resetPin6} { ~resetToMarker6.(); }
+                {~resetPin7} { ~resetToMarker7.(); }
+                {~resetPin8} { ~resetToMarker8.(); }
+                {~resetPin9} { ~resetToMarker9.(); }
+                {~resetPin10} { ~resetToMarker10.(); }
+                {~resetPin11} { ~resetToMarker11.(); }
+                {~resetPin12} { ~resetToMarker12.(); }
+                {};
+
+            };
+        };
+    }, ~buttonListenerCmdName);
+
     s.sync;
+
+    if (~buttonListenerSynth.notNil) {
+        ~buttonListenerSynth.free;
+    };
+    ~buttonListenerSynth = Synth(~buttonListenerSynthDefName);
 
     // init
     ~resetToMarker1.();
@@ -218,10 +297,29 @@ ServerQuit.add { 0.exit }; // quit if the button is pressed
 )
 
 // debug code
-// to call on pedal press
-// ~playNextSample.();
-
-// ~resetToSample.("sample-0223");
 // ~state[\nextIndex]
 // ~state[\buffers].keys.asArray.sort
 // ~state[\voices]
+
+// ~debugClickButton = {|index|
+//     var values = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0];
+//     values[index] = 1.0;
+//     ~buttonListenerSynth.set(\t_values, values);
+// };
+//
+// ~debugClickButton.(~triggerSamplePin);
+// ~debugClickButton.(~resetPin1);
+// ~debugClickButton.(~resetPin2);
+// ~debugClickButton.(~resetPin3);
+// ~debugClickButton.(~resetPin4);
+// ~debugClickButton.(~resetPin5);
+// ~debugClickButton.(~resetPin6);
+// ~debugClickButton.(~resetPin7);
+// ~debugClickButton.(~resetPin8);
+// ~debugClickButton.(~resetPin9);
+// ~debugClickButton.(~resetPin10);
+// ~debugClickButton.(~resetPin11);
+// ~debugClickButton.(~resetPin12);
+// ~debugClickButton.(~resetPin13);
+// ~debugClickButton.(~resetPin14);
+// ~debugClickButton.(~resetPin15);
