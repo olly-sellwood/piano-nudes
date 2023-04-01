@@ -274,22 +274,3 @@ s.waitForBoot {
 };
 )
 
-// // debug code
-// ~state[\nextIndex];
-// ~state[\buffers].keys.asArray.sort;
-// ~state[\voices];
-//
-// (
-// ~debugClickButton = {|index|
-//     var values = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0];
-//     if (index < values.size) {
-//
-//         values[index] = 1.0;
-//         ~buttonListenerSynth.set(\t_values, values);
-//     } {
-//         ("pin index out of range. Pin:"+ index ++ "," + "Max:" + values.lastIndex).postln;
-//     }
-// };
-// );
-// ~debugClickButton.(16);
-// ~debugClickButton.(3);
