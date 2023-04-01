@@ -14,9 +14,20 @@ DONE
 
 */
 
-s.options.numBuffers = 2048;
-s.boot;
-(
+s = Server.default;
+
+if (Platform.hasBelaSupport) {
+    s.options.numAnalogInChannels = 8;
+    s.options.numAnalogOutChannels = 8;
+    s.options.numDigitalChannels = 16;
+
+    s.options.blockSize = 16;
+    s.options.numInputBusChannels = 2;
+    s.options.numOutputBusChannels = 2;
+};
+
+s.options.postln;
+
 ~samples_folder_path = File.realpath(thisProcess.nowExecutingPath.dirname +/+ "../samples/");
 
 if (~samples_folder_path.isNil) {
