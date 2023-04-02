@@ -7,6 +7,8 @@ SuperCollider https://supercollider.github.io patch for Bela (https://bela.io), 
 ## TODO
 
 -   add samples to repo, once finalised (mono?)
+-   add toggle for logging
+-   investigate stereo samples? (remove if mono)
 
 ## Installation
 
@@ -32,12 +34,11 @@ To stop running the project at startup run
 
 See here for more info starting automatically https://learn.bela.io/using-bela/technical-explainers/scripts/#set_startupsh/
 
-
 ## Button Configuration
 
 To configure buttons connected to the Bela, use the Dictionary at the top of `_main.scd` to create a mapping between pin numbers and actions. The numbers on the left correspond to the hardware pin number (see https://learn.bela.io/pin-diagram/).
 
-The string `"trigger"` will play the current sample and move the playhead to the next sample. All other strings will move the playhead to that sample (e.g. `"sample-0646"`). This must match *exactly* the name (without extension) of a file in the `samples` folder, e.g. `"sample-0646"` will move to `"/samples/sample-0646.wav"`.
+The string `"trigger"` will play the current sample and move the playhead to the next sample. All other strings will move the playhead to that sample (e.g. `"sample-0646"`). This must match _exactly_ the name (without extension) of a file in the `samples` folder, e.g. `"sample-0646"` will move to `"/samples/sample-0646.wav"`.
 
 ```c++
 ~pinMapping = Dictionary.with(*[
@@ -59,15 +60,16 @@ The string `"trigger"` will play the current sample and move the playhead to the
 
 ## Running locally
 
-To run the project on a regular computer, open `local.scd` and execute the top block of code. You can use the `~debugClickButton` function to simulate clicking a button, e.g. `~debugClickButton.(0);` to click the first button (play next sample). 
+To run the project on a regular computer, open `local.scd` and execute the top block of code. You can use the `~debugClickButton` function to simulate clicking a button, e.g. `~debugClickButton.(0);` to click the first button (play next sample).
 
-Note: for debugging purposes, this simulates receiving messages from the Bela rather than calling the functions directly. 
+Note: for debugging purposes, this simulates receiving messages from the Bela rather than calling the functions directly.
 
 ### MIDI
 
 The file `midi.scd` has example code is included to use MIDI input instead of buttons. Note that this can only be run locally. If you want to run it on the Bela, copy-paste everything except the first line into the top of `_main.scd`.
 
-Do not copy line 1: 
+Do not copy line 1:
+
 ```
 File.realpath(thisProcess.nowExecutingPath.dirname +/+ "_main.scd").load;
 ```
@@ -95,7 +97,6 @@ cd /root/Bela/projects/piano-nudes && git checkout -- . && git pull
 ```
 
 (The details of git are beyond the scope of this document, but this is a good guide: https://docs.github.com/en/get-started/using-git/about-git)
-
 
 ## Bela Settings
 
