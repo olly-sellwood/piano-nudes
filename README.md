@@ -63,7 +63,9 @@ To run the project on a regular computer, open `local.scd` and execute the top b
 
 Note: for debugging purposes, this simulates receiving messages from the Bela rather than calling the functions directly. 
 
-Example code is included to use MIDI input to call functions directly.
+### MIDI
+
+The file `midi.scd` has example code is included to use MIDI input instead of buttons.
 
 ## Updating the project
 
