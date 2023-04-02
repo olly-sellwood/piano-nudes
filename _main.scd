@@ -49,7 +49,7 @@ if (Platform.hasBelaSupport) {
 ~samplesDirectory = File.realpath(thisProcess.nowExecutingPath.dirname +/+ "samples");
 
 if (~samplesDirectory.isNil) {
-    "samples folder does not exist, the folder structure should be:".postln;
+    "Error: samples folder does not exist, the folder structure should be:".postln;
     "".postln;
     "piano-nudes/_main.scd".postln;
     "piano-nudes/samples/sample-0001.wav (etc)".postln;
@@ -174,7 +174,7 @@ if (~samplesDirectory.isNil) {
         ~setIndex.(index);
         ("- reset to" + filenameWithoutExtension).postln;
     } {
-        ("tried to reset to a sample that doesn't exist:" + filenameWithoutExtension).postln;
+        ("Error: tried to reset to a sample that doesn't exist:" + filenameWithoutExtension).postln;
     };
 };
 
@@ -273,4 +273,3 @@ s.waitForBoot {
     ~resetToSample.(PathName(~samplePaths[0]).fileNameWithoutExtension);
 };
 )
-
