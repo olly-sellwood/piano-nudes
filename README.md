@@ -10,12 +10,18 @@ SuperCollider https://supercollider.github.io patch for Bela (https://bela.io), 
 -   commenting and tidying
 -   LED Button for feedback
 -   shorter lookahead
+-   add a message when set up is complete
+-   midi reset on white keys
+-   add commented versions of true/false config
+-   send button demo
 
 ### Readme TODO
 
 -   where to find terminal
 -   ssh in updating the project
 -   updating code using github web UI
+    - previewing changes, as may have updated in the meantime
+-   split ssh into two sections
 
 ## Installation
 
