@@ -32,6 +32,29 @@ To stop running the project at startup run
 
 See here for more info starting automatically https://learn.bela.io/using-bela/technical-explainers/scripts/#set_startupsh/
 
+## Disabling the IDE
+
+Once the piece is ready for performance, the IDE should be disabled to preserve precious CPU and RAM used by the Node process. From a computer connected via USB run the following:
+
+```sh
+ssh root@bela.local
+# once you are logged in to Bela run
+systemctl stop bela_ide
+systemctl disable bela_ide
+```
+
+To enable them again run the following from a computer connected via USB:
+
+```sh
+ssh root@bela.local
+# once you are logged in to Bela run
+
+systemctl start bela_ide
+systemctl enable bela_ide
+```
+
+Taken from this forum post: https://forum.bela.io/d/555-debugging-again/30
+
 ## Button Configuration
 
 To configure buttons connected to the Bela, use the Dictionary at the top of `_main.scd` to create a mapping between pin numbers and actions. The numbers on the left correspond to the hardware pin number (see https://learn.bela.io/pin-diagram/).
@@ -95,6 +118,18 @@ cd /root/Bela/projects/piano-nudes && git checkout -- . && git pull
 ```
 
 (The details of git are beyond the scope of this document, but this is a good guide: https://docs.github.com/en/get-started/using-git/about-git)
+
+## Debugging
+
+In `_main.scd` you can enable logging of all major events (sample loading, playback etc). This is disabled for performance reasons, but can be enabled by changing:
+
+```
+~isLoggingEnabled = false;
+```
+to
+```
+~isLoggingEnabled = true;
+```
 
 ## Bela Settings
 
