@@ -162,15 +162,15 @@ if (~samplesDirectory.isNil) {
 
             ~state[\voices][synth.nodeID] = Dictionary.with(*[\synth -> synth, \buffer -> buffer, \index -> index]);
             ~state[\buffers].removeAt(index);
+            ~setIndex.(nextIndex);
 
             ~logPathAction.(buffer.path, "play");
 
-            ~setIndex.(nextIndex);
         } {
-            "piece finished".postln;
+            "- piece finished".postln;
         };
     } {
-        "piece finished".postln;
+        "- piece finished".postln;
     };
 };
 
