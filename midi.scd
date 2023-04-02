@@ -21,6 +21,20 @@ MIDIdef.noteOn(\noteListener, {|velocity, note|
     { 45 } { ~resetToSample.("sample-0912") }
     { 46 } { ~resetToSample.("sample-0960") }
     { 47 } { ~resetToSample.("sample-0983") }
-    { "note is not mapped".postln; }
+
+    { 24 } {
+    	var newIndex = (~state[\nextIndex] - 10).max(0);
+    	var sampleName = PathName(~samplePaths[newIndex]).fileNameWithoutExtension;
+    	~resetToSample.(sampleName);
+    	~state[\nextIndex] = newIndex;
+    }
+    { 26 } {
+    	var newIndex = (~state[\nextIndex] + 10).min(~samplePaths.lastIndex);
+    	var sampleName = PathName(~samplePaths[newIndex]).fileNameWithoutExtension;
+    	~resetToSample.(sampleName);
+    	~state[\nextIndex] = newIndex;
+    }
+
+    { ("note is not mapped:" + note).postln; }
 
 });
