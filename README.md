@@ -91,7 +91,7 @@ The file `midi.scd` has example code is included to use MIDI input instead of bu
 
 Do not copy line 1:
 
-```
+```c++
 File.realpath(thisProcess.nowExecutingPath.dirname +/+ "_main.scd").load;
 ```
 
@@ -123,12 +123,22 @@ cd /root/Bela/projects/piano-nudes && git checkout -- . && git pull
 
 In `_main.scd` you can enable logging of all major events (sample loading, playback etc). This is disabled for performance reasons, but can be enabled by changing:
 
-```
+```c++
 ~isLoggingEnabled = false;
 ```
 to
-```
+```c++
 ~isLoggingEnabled = true;
+```
+
+Similarly, a beep can be enabled / disabled for every time a sample is played (2000hz!) and when the playhead is reset (3000hz!). This can be set with:
+
+```c++
+~isBeepingEnabled = false;
+```
+
+```c++
+~isBeepingEnabled = true;
 ```
 
 ## Bela Settings

@@ -30,6 +30,8 @@ SuperCollider patch for Bela (https://bela.io), by Arthur Carabott (https://www.
 
 ~isLoggingEnabled = false;
 
+~isBeepingEnabled = false;
+
 // number of Bela DigitalIn pins to listen to
 ~numDigitalInputs = 16;
 
@@ -160,6 +162,10 @@ if (~samplesDirectory.isNil) {
             var synth = Synth("sample-player-mono", [\bufnum, buffer]);
             var nextIndex = if (index < ~samplePaths.lastIndex) { index + 1 } { nil };
 
+            if (~isBeepingEnabled) {
+                Synth("beep", [\freq, 2000]);
+            };
+
             ~state[\voices][synth.nodeID] = Dictionary.with(*[\synth -> synth, \buffer -> buffer, \index -> index]);
             ~state[\buffers].removeAt(index);
             ~setIndex.(nextIndex);
@@ -172,6 +178,7 @@ if (~samplesDirectory.isNil) {
     } {
         "- piece finished".postln;
     };
+
 };
 
 // helper for the reset buttons
@@ -209,9 +216,12 @@ if (~samplesDirectory.isNil) {
     if (index.notNil) {
         ~logPathAction.(fileNameWithoutExtension, "reset");
         ~setIndex.(index);
-
     } {
         ("Error: tried to reset to a sample that doesn't exist:" + fileNameWithoutExtension).postln;
+    };
+
+    if (~isBeepingEnabled) {
+        Synth("beep", [\freq, 3000]);
     };
 };
 
@@ -223,6 +233,13 @@ s.waitForBoot {
         var sig = PlayBuf.ar(1, bufnum, BufRateScale.kr(bufnum), doneAction: Done.freeSelf);
         Out.ar(out, sig);
     }).add;
+
+    if (~isBeepingEnabled) {
+        SynthDef("beep", {|freq|
+            var sig = SinOsc.ar(freq) * EnvGen.ar(Env.perc, doneAction: Done.freeSelf) * 0.1;
+            Out.ar(0, sig);
+        }).add;
+    };
 
     "- added playback SynthDef".postln;
 
