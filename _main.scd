@@ -91,7 +91,6 @@ if (~samplesDirectory.isNil) {
         (prefix + marker + action + PathName(path).fileNameWithoutExtension).postln;
     };
 };
-~logPathAction.("/gogo/banana.wav", "free")
 
 
 // initialize state
