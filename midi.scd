@@ -1,3 +1,5 @@
+File.realpath(thisProcess.nowExecutingPath.dirname +/+ "_main.scd").load;
+
 // you could do something like the following to use MIDI input
 // see MIDIdef help for more options, like using Control Change instead of Note On
 MIDIIn.connectAll;
@@ -22,4 +24,3 @@ MIDIdef.noteOn(\noteListener, {|velocity, note|
     { "note is not mapped".postln; }
 
 });
-
