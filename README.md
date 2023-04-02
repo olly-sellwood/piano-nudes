@@ -52,8 +52,11 @@ The string `"trigger"` will play the current sample and move the playhead to the
 
 ## Running locally
 
-To run the project on a regular computer, open `local.scd` and execute the top block of code. You can use the `~debugClickButton` function to simulate clicking a button, e.g. `~debugClickButton.(0);` to click the first button (play next sample).
+To run the project on a regular computer, open `local.scd` and execute the top block of code. You can use the `~debugClickButton` function to simulate clicking a button, e.g. `~debugClickButton.(0);` to click the first button (play next sample). 
 
+Note: for debugging purposes, this simulates receiving messages from the Bela rather than calling the functions directly. 
+
+Example code is included to use MIDI input to call functions directly.
 
 ## Updating the project
 
