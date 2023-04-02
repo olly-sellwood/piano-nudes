@@ -65,7 +65,12 @@ Note: for debugging purposes, this simulates receiving messages from the Bela ra
 
 ### MIDI
 
-The file `midi.scd` has example code is included to use MIDI input instead of buttons.
+The file `midi.scd` has example code is included to use MIDI input instead of buttons. Note that this can only be run locally. If you want to run it on the Bela, copy-paste everything except the first line into the top of `_main.scd`.
+
+Do not copy line 1: 
+```
+File.realpath(thisProcess.nowExecutingPath.dirname +/+ "_main.scd").load;
+```
 
 ## Updating the project
 
