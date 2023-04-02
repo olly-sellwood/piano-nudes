@@ -7,6 +7,15 @@ SuperCollider https://supercollider.github.io patch for Bela (https://bela.io), 
 ## TODO
 
 -   add samples to repo, once finalised (mono?)
+-   commenting and tidying
+-   LED Button for feedback
+-   shorter lookahead
+
+### Readme TODO
+
+-   where to find terminal
+-   ssh in updating the project
+-   updating code using github web UI
 
 ## Installation
 
@@ -126,7 +135,9 @@ In `_main.scd` you can enable logging of all major events (sample loading, playb
 ```c++
 ~isLoggingEnabled = false;
 ```
+
 to
+
 ```c++
 ~isLoggingEnabled = true;
 ```
