@@ -45,9 +45,6 @@ if (Platform.hasBelaSupport) {
     s.options.numOutputBusChannels = 2;
 };
 
-~synthDefNameMono = "sample-player-mono";
-~synthDefNameStereo = "sample-player-stereo";
-
 ~samplesDirectory = File.realpath(thisProcess.nowExecutingPath.dirname +/+ "samples");
 
 if (~samplesDirectory.isNil) {
@@ -149,14 +146,6 @@ if (~samplesDirectory.isNil) {
     };
 };
 
-~playSample = {|buffer|
-    var name = if (buffer.numChannels == 1) { ~synthDefNameMono; } { ~synthDefNameStereo; };
-    var synth = Synth(name, [\bufnum, buffer]);
-
-    // return the synth
-    synth;
-};
-
 // trigger function to be called on pedal press
 ~playNextSample = {
     var index = ~state[\nextIndex];
@@ -168,7 +157,7 @@ if (~samplesDirectory.isNil) {
             // play the buffer, move it from state[\buffers] to state[\voices]
             // then increment the index
 
-            var synth = ~playSample.(buffer);
+            var synth = Synth("sample-player-mono", [\bufnum, buffer]);
             var nextIndex = if (index < ~samplePaths.lastIndex) { index + 1 } { nil };
 
             ~state[\voices][synth.nodeID] = Dictionary.with(*[\synth -> synth, \buffer -> buffer, \index -> index]);
@@ -229,17 +218,13 @@ if (~samplesDirectory.isNil) {
 ServerQuit.add { 0.exit }; // quit if the button is pressed
 
 s.waitForBoot {
-    // SynthDefs for playback (handles mono or stereo)
-    [[~synthDefNameMono, 1], [~synthDefNameStereo, 2]].do {|model|
-        var name = model[0];
-        var numChannels = model[1];
 
-        SynthDef(name, {|bufnum, out = 0|
-            var sig = PlayBuf.ar(numChannels, bufnum, BufRateScale.kr(bufnum), doneAction: Done.freeSelf);
-            Out.ar(out, sig);
-        }).add;
-    };
-    "- added playback synth defs".postln;
+    SynthDef("sample-player-mono", {|bufnum, out = 0|
+        var sig = PlayBuf.ar(1, bufnum, BufRateScale.kr(bufnum), doneAction: Done.freeSelf);
+        Out.ar(out, sig);
+    }).add;
+
+    "- added playback SynthDef".postln;
 
     // listen for synth end messages from the server, free and remove the buffer when finished.
     OSCdef(\synthListener, {|msg|
