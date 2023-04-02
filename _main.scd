@@ -62,8 +62,21 @@ if (~samplesDirectory.isNil) {
 ~samplePaths = PathName(~samplesDirectory).files.collect {|pathName| pathName.fullPath };
 
 ~logPathAction = {|path, action|
-    (action.padRight(8) + PathName(path).fileName).postln;
+    var column = switch(action)
+    { "reset" } { 0 }
+    { "load"  } { 1 }
+    { "play"  } { 2 }
+    { "free"  } { 3 }
+    { "clean" } { 4 }
+
+    { 0 };
+
+    var prefix = Array.fill(column * 18, " ").join;
+
+    (prefix + action + PathName(path).fileNameWithoutExtension).postln;
 };
+
+
 
 // initialize state
 ~state = Dictionary[];
@@ -159,10 +172,10 @@ if (~samplesDirectory.isNil) {
 
 // helper for the reset buttons
 // @filenameWithoutExtension `String` name of the sample to reset to
-~resetToSample = {|filenameWithoutExtension|
+~resetToSample = {|fileNameWithoutExtension|
     // find the index of the sample to jump to
     var index = ~samplePaths.detectIndex {|path|
-        PathName(path).fileNameWithoutExtension == filenameWithoutExtension;
+        PathName(path).fileNameWithoutExtension == fileNameWithoutExtension;
     };
 
     // free any playing voices
@@ -175,10 +188,11 @@ if (~samplesDirectory.isNil) {
 
     // move to the new sample to play
     if (index.notNil) {
+        ~logPathAction.(fileNameWithoutExtension, "reset");
         ~setIndex.(index);
-        ("- reset to" + filenameWithoutExtension).postln;
+
     } {
-        ("Error: tried to reset to a sample that doesn't exist:" + filenameWithoutExtension).postln;
+        ("Error: tried to reset to a sample that doesn't exist:" + fileNameWithoutExtension).postln;
     };
 };
 
