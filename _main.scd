@@ -11,7 +11,7 @@ SuperCollider patch for Bela (https://bela.io), by Arthur Carabott (https://www.
 // the number corresponds to the Bela hardware pin (see https://learn.bela.io/pin-diagram/)
 // "trigger" will play the current sample and move to the next one
 // "sample-XXXX" will move to the sample with that name
-   
+
 ~pinMapping = Dictionary.with(*[
     0 -> "trigger",
     1 -> "sample-0001",
@@ -61,6 +61,10 @@ if (~samplesDirectory.isNil) {
 // array of sample paths
 ~samplePaths = PathName(~samplesDirectory).files.collect {|pathName| pathName.fullPath };
 
+~logPathAction = {|path, action|
+    (action.padRight(8) + PathName(path).fileName).postln;
+};
+
 // initialize state
 ~state = Dictionary[];
 ~state.put(\nextIndex, 0);          // index of the next sample to play
@@ -95,7 +99,7 @@ if (~samplesDirectory.isNil) {
                     buffer.free;
                     ~state[\buffers].removeAt(key);
 
-                    ("freed buffer" + PathName(path).fileName).postln;
+                    ~logPathAction.(path, "free");
                 };
             };
         };
@@ -109,7 +113,7 @@ if (~samplesDirectory.isNil) {
 
                 ~state[\buffers].put(lookaheadIndex, buffer);
 
-                ("loaded buffer:" + PathName(path).fileName).postln;
+                ~logPathAction.(path, "load");
             };
         };
     } {
@@ -142,7 +146,7 @@ if (~samplesDirectory.isNil) {
             ~state[\voices][synth.nodeID] = Dictionary.with(*[\synth -> synth, \buffer -> buffer, \index -> index]);
             ~state[\buffers].removeAt(index);
 
-            ("playing" + PathName(buffer.path).fileName).postln;
+            ~logPathAction.(buffer.path, "play");
 
             ~setIndex.(nextIndex);
         } {
@@ -205,7 +209,7 @@ s.waitForBoot {
             voice[\buffer].free;
             ~state[\voices].removeAt(nodeID);
 
-            ("cleaned up:" + PathName(samplePath).fileName).postln;
+            ~logPathAction.(samplePath, "clean");
 
         };
     }, "/n_end");
