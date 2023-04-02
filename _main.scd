@@ -72,18 +72,19 @@ if (~samplesDirectory.isNil) {
 ~logPathAction = {|path, action|
     var column = switch(action)
     { "reset" } { 0 }
-    { "load"  } { 1 }
-    { "play"  } { 2 }
+    { "load"  } { 0 }
+    { "play"  } { 1 }
+    { "clean" } { 2 }
     { "free"  } { 3 }
-    { "clean" } { 4 }
 
     { 0 };
 
     var prefix = Array.fill(column * 18, " ").join;
+    var marker = if (action == "reset") { "=====================" } { "" };
 
-    (prefix + action + PathName(path).fileNameWithoutExtension).postln;
+    (prefix + marker + action + PathName(path).fileNameWithoutExtension).postln;
 };
-
+~logPathAction.("/gogo/banana.wav", "free")
 
 
 // initialize state
