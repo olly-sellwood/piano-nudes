@@ -61,6 +61,14 @@ if (~samplesDirectory.isNil) {
 // array of sample paths
 ~samplePaths = PathName(~samplesDirectory).files.collect {|pathName| pathName.fullPath };
 
+// cache indices of samples that are mapping to buttons
+~cachedResetIndices = Dictionary[];
+~samplePaths.do {|path, index|
+    if (~pinMapping.values.any {|mapping| path.contains(mapping); }) {
+        ~cachedResetIndices.add(PathName(path).fileNameWithoutExtension -> index);
+    };
+};
+
 ~logPathAction = {|path, action|
     var column = switch(action)
     { "reset" } { 0 }
@@ -173,9 +181,24 @@ if (~samplesDirectory.isNil) {
 // helper for the reset buttons
 // @filenameWithoutExtension `String` name of the sample to reset to
 ~resetToSample = {|fileNameWithoutExtension|
+
     // find the index of the sample to jump to
-    var index = ~samplePaths.detectIndex {|path|
-        PathName(path).fileNameWithoutExtension == fileNameWithoutExtension;
+    var cachedIndex = ~cachedResetIndices[fileNameWithoutExtension];
+
+    var index;
+    if (cachedIndex.isNil.not) {
+        index = cachedIndex;
+    } {
+        var detectedIndex;
+        detectedIndex = ~samplePaths.detectIndex {|path|
+            PathName(path).fileNameWithoutExtension == fileNameWithoutExtension;
+        };
+        if (detectedIndex.notNil) {
+            ~cachedResetIndices[fileNameWithoutExtension] = detectedIndex;
+            ~logPathAction.(fileNameWithoutExtension, "cache index");
+        };
+
+        index = detectedIndex;
     };
 
     // free any playing voices
