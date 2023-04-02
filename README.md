@@ -2,7 +2,7 @@
 
 Piano Nudes, by Olly Sellwood (https://www.ollysellwood.info)
 
-SuperCollider patch for Bela (https://bela.io), by Arthur Carabott (https://www.arthurcarabott.com)
+SuperCollider https://supercollider.github.io patch for Bela (https://bela.io), by Arthur Carabott (https://www.arthurcarabott.com)
 
 ## TODO
 
@@ -16,15 +16,22 @@ If using a fresh bela, the project can be setup by going to `http://bela.local` 
 git clone https://github.com/olly-sellwood/piano-nudes.git /root/Bela/projects/piano-nudes
 ```
 
+See here for more info on using the console: https://learn.bela.io/the-ide/meet-the-ide/#the-console
+
 To set the project to start automatically when Bela boots run
 
 ```sh
 /root/Bela/scripts/set_startup.sh piano-nudes
 ```
 
-See here for more info
-https://learn.bela.io/the-ide/meet-the-ide/#the-console
-https://learn.bela.io/using-bela/technical-explainers/scripts/#set_startupsh/
+To stop running the project at startup run
+
+```sh
+/root/Bela/scripts/set_startup.sh nostartup piano-nudes
+```
+
+See here for more info starting automatically https://learn.bela.io/using-bela/technical-explainers/scripts/#set_startupsh/
+
 
 ## Button Configuration
 
@@ -70,8 +77,6 @@ The recommended workflow for making changes is:
 cd /root/Bela/projects/piano-nudes && git pull
 ```
 
-(The details of git are beyond the scope of this document, but this is a good guide: https://docs.github.com/en/get-started/using-git/about-git)
-
 If you encounter errors, you probably made changes to the code in the Bela IDE. You should then:
 
 1.  copy the code from the IDE into your local version
@@ -81,6 +86,9 @@ If you encounter errors, you probably made changes to the code in the Bela IDE. 
 ```sh
 cd /root/Bela/projects/piano-nudes && git checkout -- . && git pull
 ```
+
+(The details of git are beyond the scope of this document, but this is a good guide: https://docs.github.com/en/get-started/using-git/about-git)
+
 
 ## Bela Settings
 
