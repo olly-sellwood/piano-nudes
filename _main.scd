@@ -162,7 +162,7 @@ if (~samplesDirectory.isNil) {
     };
 
     // free any playing voices
-    ~state[\voices].values.do {|voice| voice[\synth].free; };
+    ~state[\voices].values.do {|voice| voice[\synth].free; voice[\buffer].free; };
     ~state[\voices].clear;
 
     // free any buffers
