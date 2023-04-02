@@ -1,9 +1,7 @@
 /*
-
 Piano Nudes, by Olly Sellwood (https://www.ollysellwood.info)
 
 SuperCollider patch for Bela (https://bela.io), by Arthur Carabott (https://www.arthurcarabott.com)
-
 */
 (
 
@@ -25,7 +23,7 @@ SuperCollider patch for Bela (https://bela.io), by Arthur Carabott (https://www.
     9 -> "sample-0834",
     10 -> "sample-0912",
     11 -> "sample-0960",
-    12 -> "sample-0983",
+    1 -> "sample-0983",
 ]);
 
 ~isLoggingEnabled = false;
