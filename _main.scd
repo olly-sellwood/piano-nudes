@@ -28,6 +28,8 @@ SuperCollider patch for Bela (https://bela.io), by Arthur Carabott (https://www.
     12 -> "sample-0983",
 ]);
 
+~isLoggingEnabled = false;
+
 // number of Bela DigitalIn pins to listen to
 ~numDigitalInputs = 16;
 
@@ -70,19 +72,24 @@ if (~samplesDirectory.isNil) {
 };
 
 ~logPathAction = {|path, action|
-    var column = switch(action)
-    { "reset" } { 0 }
-    { "load"  } { 0 }
-    { "play"  } { 1 }
-    { "clean" } { 2 }
-    { "free"  } { 3 }
+    var column, prefix, marker;
 
-    { 0 };
+    if (~isLoggingEnabled) {
 
-    var prefix = Array.fill(column * 18, " ").join;
-    var marker = if (action == "reset") { "=====================" } { "" };
+        column = switch(action)
+        { "reset" } { 0 }
+        { "load"  } { 0 }
+        { "play"  } { 1 }
+        { "clean" } { 2 }
+        { "free"  } { 3 }
 
-    (prefix + marker + action + PathName(path).fileNameWithoutExtension).postln;
+        { 0 };
+
+        prefix = Array.fill(column * 18, " ").join;
+        marker = if (action == "reset") { "=====================" } { "" };
+
+        (prefix + marker + action + PathName(path).fileNameWithoutExtension).postln;
+    };
 };
 ~logPathAction.("/gogo/banana.wav", "free")
 

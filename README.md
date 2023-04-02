@@ -7,7 +7,6 @@ SuperCollider https://supercollider.github.io patch for Bela (https://bela.io), 
 ## TODO
 
 -   add samples to repo, once finalised (mono?)
--   add toggle for logging
 -   investigate stereo samples? (remove if mono)
 
 ## Installation
