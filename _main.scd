@@ -20,18 +20,35 @@ MIDIdef.noteOn(\noteListener, {|velocity, note|
     switch (note)
     { 60 } { ~playNextSample.() }
 
-    { 36 } { ~resetToSample.("sample-0001") }
-    { 37 } { ~resetToSample.("sample-0074") }
-    { 38 } { ~resetToSample.("sample-0239") }
-    { 39 } { ~resetToSample.("sample-0269") }
-    { 40 } { ~resetToSample.("sample-0486") }
-    { 41 } { ~resetToSample.("sample-0579") }
-    { 42 } { ~resetToSample.("sample-0646") }
-    { 43 } { ~resetToSample.("sample-0719") }
-    { 44 } { ~resetToSample.("sample-0834") }
-    { 45 } { ~resetToSample.("sample-0912") }
-    { 46 } { ~resetToSample.("sample-0960") }
-    { 47 } { ~resetToSample.("sample-0983") }
+    { 31 } { ~resetToSample.("sample-0001") }
+    { 32 } { ~resetToSample.("sample-0058") }
+    { 33 } { ~resetToSample.("sample-0074") }
+    { 34 } { ~resetToSample.("sample-0187") }
+    { 35 } { ~resetToSample.("sample-0223") }
+    { 36 } { ~resetToSample.("sample-0239") }
+    { 37 } { ~resetToSample.("sample-0269") }
+    { 38 } { ~resetToSample.("sample-0486") }
+    { 39 } { ~resetToSample.("sample-0530") }
+    { 40 } { ~resetToSample.("sample-0546") }
+    { 41 } { ~resetToSample.("sample-0551") }
+    { 42 } { ~resetToSample.("sample-0569") }
+    { 43 } { ~resetToSample.("sample-0574") }
+    { 44 } { ~resetToSample.("sample-0579") }
+    { 45 } { ~resetToSample.("sample-0587") }
+    { 46 } { ~resetToSample.("sample-0598") }
+    { 47 } { ~resetToSample.("sample-0613") }
+    { 48 } { ~resetToSample.("sample-0628") }
+    { 49 } { ~resetToSample.("sample-0646") }
+    { 50 } { ~resetToSample.("sample-0665") }
+    { 51 } { ~resetToSample.("sample-0689") }
+    { 52 } { ~resetToSample.("sample-0701") }
+    { 53 } { ~resetToSample.("sample-0719") }
+    { 54 } { ~resetToSample.("sample-0834") }
+    { 55 } { ~resetToSample.("sample-0846") }
+    { 56 } { ~resetToSample.("sample-0868") }
+    { 57 } { ~resetToSample.("sample-0912") }
+    { 58 } { ~resetToSample.("sample-0960") }
+    { 59 } { ~resetToSample.("sample-0983") }
 
     { 24 } {
     	var newIndex = (~state[\nextIndex] - 10).max(0);
